@@ -1,0 +1,63 @@
+syntax = "proto2";
+package hw.trezor.messages.bitshares;
+
+// Sugar for easier handling in Java
+option java_package = "com.satoshilabs.trezor.lib.protobuf";
+option java_outer_classname = "TrezorMessageBitshares";
+
+/**
+* Request: Ask device for Bitshares public key corresponding to address_n path
+* @start
+* @next BitsharesPublicKey
+* @next Failure
+*/
+message BitsharesGetPublicKey {
+    repeated uint32 address_n = 1;
+    optional bool show_display = 2;         // optionally show on display before sending the result
+}
+
+/**
+* Response: Contains an Bitshares public key derived from device private seed
+* @end
+*/
+message BitsharesPublicKey {
+    optional string wif_public_key = 1;     // Bitshares pub key in Base58 encoding
+    optional bytes raw_public_key = 2;      // Raw public key
+}
+
+/**
+ * Request: Ask device to sign transaction
+ * @start
+ * @next BitsharesSignedTx
+ * @next Failure
+ */
+message BitsharesSignTx {
+    repeated uint32 address_n = 1;
+    optional bytes chain_id = 2;
+    optional BitsharesTxHeader header = 3;
+    optional BitsharesAsset fee = 4;
+    optional string source = 5;             // contains "space.type.id"
+    optional string destination = 6;        // contains "space.type.id"
+    optional BitsharesAsset amount = 7;
+    optional string memo = 8;
+
+    message BitsharesAsset {
+        optional sint64 amount = 1;
+        optional string asset_id = 2;       // contains "space.type.id"
+    }
+
+    message BitsharesTxHeader {
+        optional uint32 head_block_number = 1;
+        optional bytes head_block_id = 2;
+        optional uint32 expiration = 3;
+    }
+}
+
+/**
+ * Response: Device returns the signature along with transaction hash
+ * @end
+ */
+message BitsharesSignedTx {
+    optional bytes signature = 1;
+    optional string tx_hash = 2;            //hash of the transaction
+}
